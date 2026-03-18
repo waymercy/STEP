@@ -1,0 +1,25 @@
+server {
+       listen 81;
+       listen [::]:81;
+
+       server_name example.ubuntu.com;
+
+       root /var/www/horse;
+       index index.php index.html;
+
+       location ~* ^.+\.(js|css|png|jpg|jpeg|gif|ico|html)$ {
+            expires max;
+       }
+
+       location / {
+                       try_files $uri $uri.php $uri/ =404;
+        }
+
+       location ~ \.php$ {
+
+       fastcgi_index   index.php;
+       fastcgi_pass    unix:/var/run/php/php-fpm.sock;
+       include         fastcgi_params;
+       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       }
+}
