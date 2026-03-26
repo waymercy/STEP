@@ -1,9 +1,14 @@
 <?php
+
+// Max: The register page. Users are able to create their accounts here.
+
 include "dbconnect.php";
 
 $message = "";
 $toastClass = "";
 
+// Max: PHP tracks the values inserted in text box. Every html textbox has an id that PHP ...
+// is able to read, grabbing the values directly.
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
@@ -13,9 +18,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $organization = $_POST['organization'];
     $country = $_POST['country'];
     $salt = base64_encode(random_bytes(8));
-    $passwordhash = crypt($password, '$5$' . $salt . '$'); // Encryption for passwords
+    $passwordhash = crypt($password, '$5$' . $salt . '$'); // Max: Encryption for passwords.
+                                                           // The process of creating a hash protected password is simple:
+                                                           // 1. User inserts their password as a plain text, it goes to the variable "$password"
+                                                           // 2. Variable "$passwordhash" takes the variable "$password" and stores inside itself.
+                                                           // 3. Variable "$passwordhash" transforms password into an enhanced hash via the "crypt" command.
+                                                           // 4. Send $passwordhash as the user's password to the database instead of $password
 
-    // Check if email is already used
+
+    // Check if email is already being used
+
     $checkEmailStmt = $conn->prepare("SELECT email FROM userdata WHERE email = ?");
     $checkEmailStmt->bind_param("s", $email);
     $checkEmailStmt->execute();
@@ -24,6 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($checkEmailStmt->num_rows > 0) {
         $message = "Email ID already exists";
         $toastClass = "alert-warning"; // Bootstrap class
+
     } else {
         $stmt = $conn->prepare("INSERT INTO userdata (name, surname, country, organization, email, password) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssssss", $name, $surname, $country, $organization, $email, $passwordhash);
@@ -39,7 +52,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     }
 
-
     $checkEmailStmt->close();
     $conn->close();
 }
@@ -51,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>HorseScratch</title>
+    <title>S.T.E.P.</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cookie">
     <link rel="stylesheet" href="assets/css/Header---Apple.css">
@@ -83,9 +95,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="col offset-0 m-auto"><input type="text" name="organization" id="organization" placeholder="Organization" required></div>
                 </div>
                 <div class="row mb-2">
+
+             <!-- Max: This is a bad implementation of a list, it could be easily bypassed by changing the webpage's html code in a browser.
+             Any text/value could be inserted by the user so be aware of this, it should be changed. I did not have time to implement a better solution.
+             You could create a mySQL table with the list of the same countries, the webpage will take them from there so user would not be able to parse something that is not on the list.
+             -->
+
                 <select class="row mb-2" name="country" id="country">
                      <option value="Estonia">Estonia</option>
-                     <option value="Latvia" selected>Latvia</option>
+                     <option value="Latvia">Latvia</option>
                      <option value="Lithuania">Lithuania</option>
                      <option value="Finland">Finland</option>
                      <option value="Sweden">Sweden</option>
